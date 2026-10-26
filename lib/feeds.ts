@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
+import snapshot from "@/data/snapshot.json";
 
 export type Category = { slug: string; name: string };
 
@@ -118,13 +119,24 @@ async function fetchSource(src: Source): Promise<Article[]> {
   }
 }
 
-export async function getArticles(category?: string): Promise<Article[]> {
-  const sources = category ? SOURCES.filter((s) => s.category === category) : SOURCES;
-  const all = (await Promise.all(sources.map(fetchSource))).flat();
+/**
+ * true: o site serve só as matérias salvas em data/snapshot.json (sem buscar feeds).
+ * false: busca os feeds ao vivo, a cada 10 minutos.
+ * Para atualizar a foto: `npx tsx scripts/snapshot.mts`.
+ */
+export const FROZEN = true;
+
+export async function fetchLive(): Promise<Article[]> {
+  const all = (await Promise.all(SOURCES.map(fetchSource))).flat();
   const seen = new Set<string>();
   return all
     .filter((a) => a.title && a.link && !seen.has(a.link) && seen.add(a.link))
     .sort((a, b) => +new Date(b.date) - +new Date(a.date));
+}
+
+export async function getArticles(category?: string): Promise<Article[]> {
+  const all = FROZEN ? (snapshot as Article[]) : await fetchLive();
+  return category ? all.filter((a) => a.category === category) : all;
 }
 
 export function timeAgo(iso: string): string {
