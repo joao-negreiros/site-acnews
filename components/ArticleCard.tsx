@@ -1,13 +1,12 @@
+import Link from "next/link";
 import { CATEGORIES, timeAgo, type Article } from "@/lib/feeds";
 
 const catName = (slug: string) => CATEGORIES.find((c) => c.slug === slug)?.name ?? slug;
 
 export function ArticleCard({ a, featured = false }: { a: Article; featured?: boolean }) {
   return (
-    <a
-      href={a.link}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href={`/noticia/${a.id}`}
       className={`group flex gap-4 ${featured ? "flex-col" : "flex-row"}`}
     >
       {a.image && (
@@ -39,6 +38,6 @@ export function ArticleCard({ a, featured = false }: { a: Article; featured?: bo
           {a.source} · {timeAgo(a.date)}
         </p>
       </div>
-    </a>
+    </Link>
   );
 }

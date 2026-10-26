@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
 
 export type Category = { slug: string; name: string };
@@ -30,6 +31,11 @@ export type Article = {
   link: string;
   summary: string;
   image?: string;
+  author?: string;
+  /** Parágrafos em texto puro, extraídos do que o próprio feed entrega */
+  paragraphs: string[];
+  /** true quando o feed traz a matéria inteira; false quando só traz uma chamada */
+  fullText: boolean;
   source: string;
   category: string;
   date: string;
@@ -41,6 +47,28 @@ const arr = <T,>(v: T | T[] | undefined): T[] => (v === undefined ? [] : Array.i
 
 const text = (v: unknown): string =>
   typeof v === "string" ? v : v && typeof v === "object" && "#text" in v ? String((v as Record<string, unknown>)["#text"]) : "";
+
+const decode = (s: string) =>
+  s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+
+function toParagraphs(html: string): string[] {
+  return decode(
+    html
+      .replace(/<(script|style|iframe)[\s\S]*?<\/\1>/gi, "")
+      .replace(/<\/(p|div|li|h[1-6]|blockquote)>|<br\s*\/?>/gi, "\n\n")
+      .replace(/<[^>]*>/g, ""),
+  )
+    .split(/\n{2,}/)
+    .map((p) => p.replace(/\s+/g, " ").trim())
+    .filter((p) => p && !/^(O post .* apareceu primeiro|Leia mais|Veja também)/i.test(p));
+}
 
 const stripHtml = (s: string) =>
   s.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
@@ -54,6 +82,8 @@ function findImage(item: Record<string, any>, html: string): string | undefined 
   return html.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1];
 }
 
+const makeId = (link: string) => createHash("sha1").update(link).digest("base64url").slice(0, 12);
+
 async function fetchSource(src: Source): Promise<Article[]> {
   try {
     const res = await fetch(src.url, {
@@ -64,11 +94,16 @@ async function fetchSource(src: Source): Promise<Article[]> {
     if (!res.ok) return [];
     const xml = parser.parse(await res.text());
     const items = arr<Record<string, any>>(xml?.rss?.channel?.item);
-    return items.slice(0, 15).map((item) => {
+    return items.slice(0, 20).map((item) => {
       const rawDesc = text(item.description) || text(item["content:encoded"]);
+      const body = text(item["content:encoded"]) || rawDesc;
       const link = text(item.link);
+      const paragraphs = toParagraphs(body);
       return {
-        id: `${src.category}:${link}`,
+        id: makeId(link),
+        author: text(item["dc:creator"]) || undefined,
+        paragraphs,
+        fullText: paragraphs.join(" ").length > 700,
         title: stripHtml(text(item.title)),
         link,
         summary: stripHtml(rawDesc).slice(0, 220),
@@ -98,4 +133,8 @@ export function timeAgo(iso: string): string {
   const h = Math.round(min / 60);
   if (h < 24) return `há ${h} h`;
   return `há ${Math.round(h / 24)} d`;
+}
+
+export async function getArticle(id: string): Promise<Article | undefined> {
+  return (await getArticles()).find((a) => a.id === id);
 }
