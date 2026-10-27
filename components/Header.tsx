@@ -37,7 +37,7 @@ export async function Header() {
 
       {/* Barra vermelha com o menu em letras brancas */}
       <nav className="bg-brand text-white">
-        <ul className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-4 text-sm font-semibold uppercase whitespace-nowrap md:justify-center md:text-base">
+        <ul className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-4 font-[family-name:var(--font-outfit)] text-sm font-semibold uppercase whitespace-nowrap md:justify-center md:text-base">
           <li>
             <Link href="/" className="block px-3 py-3 hover:bg-black/15">Capa</Link>
           </li>
