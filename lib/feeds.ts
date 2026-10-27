@@ -10,9 +10,9 @@ export const CATEGORIES: Category[] = [
   { slug: "acre", name: "Acre" },
   { slug: "politica", name: "Política" },
   { slug: "esporte", name: "Esporte" },
+  { slug: "economia", name: "Economia" },
   { slug: "brasil", name: "Brasil" },
   { slug: "mundo", name: "Mundo" },
-  { slug: "economia", name: "Economia" },
 ];
 
 /** category "auto": a editoria sai do caminho do link (ver cnnCategory). */
