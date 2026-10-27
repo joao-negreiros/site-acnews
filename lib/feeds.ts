@@ -11,6 +11,7 @@ export const CATEGORIES: Category[] = [
   { slug: "brasil", name: "Brasil" },
   { slug: "mundo", name: "Mundo" },
   { slug: "economia", name: "Economia" },
+  { slug: "cultura", name: "Cultura" },
 ];
 
 /** category "auto": a editoria sai do caminho do link (ver cnnCategory). */
@@ -28,11 +29,12 @@ export const SOURCES: Source[] = [
   { name: "G1", url: "https://g1.globo.com/rss/g1/", category: "brasil" },
   { name: "G1", url: "https://g1.globo.com/rss/g1/mundo/", category: "mundo" },
   { name: "G1", url: "https://g1.globo.com/rss/g1/economia/", category: "economia" },
+  { name: "G1", url: "https://g1.globo.com/rss/g1/pop-arte/", category: "cultura" },
   { name: "Agência Brasil", url: "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml", category: "brasil" },
 ];
 
 /** Quantas matérias nacionais/internacionais cada editoria mostra, e a janela de tempo considerada. */
-const CAP: Record<string, number> = { politica: 4, brasil: 5, mundo: 3, economia: 3 };
+const CAP: Record<string, number> = { politica: 4, brasil: 5, mundo: 3, economia: 3, cultura: 4 };
 const WINDOW_HOURS = 36;
 
 const CNN_SECTIONS: Record<string, string> = {
@@ -41,6 +43,7 @@ const CNN_SECTIONS: Record<string, string> = {
   politica: "politica",
   eleicoes: "politica",
   nacional: "brasil",
+  pop: "cultura",
 };
 
 /** Editoria da CNN pelo primeiro trecho do caminho; o que não está no mapa (pop, esportes...) fica de fora. */
