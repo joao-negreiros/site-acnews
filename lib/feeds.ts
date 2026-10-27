@@ -126,6 +126,23 @@ async function fetchSource(src: Source): Promise<Article[]> {
  */
 export const FROZEN = true;
 
+/** Regra do portal: nenhum emoji em texto exibido. Mantém ©, ® e ™. */
+const noEmoji = (s: string) =>
+  s
+    .replace(/[\p{Extended_Pictographic}\p{Regional_Indicator}\u200D\uFE0F\u20E3]/gu, (c) =>
+      "©®™".includes(c) ? c : "",
+    )
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+const clean = (a: Article): Article => ({
+  ...a,
+  title: noEmoji(a.title),
+  summary: noEmoji(a.summary),
+  author: a.author && noEmoji(a.author),
+  paragraphs: a.paragraphs.map(noEmoji).filter(Boolean),
+});
+
 export async function fetchLive(): Promise<Article[]> {
   const all = (await Promise.all(SOURCES.map(fetchSource))).flat();
   const seen = new Set<string>();
@@ -135,7 +152,7 @@ export async function fetchLive(): Promise<Article[]> {
 }
 
 export async function getArticles(category?: string): Promise<Article[]> {
-  const all = FROZEN ? (snapshot as Article[]) : await fetchLive();
+  const all = (FROZEN ? (snapshot as Article[]) : await fetchLive()).map(clean);
   return category ? all.filter((a) => a.category === category) : all;
 }
 
