@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { CATEGORIES, SOURCES } from "@/lib/feeds";
+import { CATEGORIES } from "@/lib/feeds";
 import { SocialIcons } from "@/components/SocialIcons";
-
-const sources = [...new Set(SOURCES.map((s) => s.name))];
 
 const heading = "mb-3 border-b border-brand pb-1 text-sm font-bold uppercase tracking-wide text-white";
 
@@ -40,8 +38,7 @@ export function Footer() {
 
         <div>
           <h2 className={heading}>Fontes</h2>
-          <p className="text-sm leading-relaxed">{sources.join(" · ")}</p>
-          <p className="mt-3 text-xs leading-relaxed text-neutral-400">
+          <p className="text-xs leading-relaxed text-neutral-400">
             Cada matéria traz o crédito do veículo de origem e a referência à publicação original. Os direitos
             pertencem aos respectivos veículos e autores.
           </p>
@@ -50,7 +47,7 @@ export function Footer() {
 
       <div className="border-t border-neutral-800">
         <p className="mx-auto max-w-6xl px-4 py-4 text-center text-xs text-neutral-500">
-          © {new Date().getFullYear()} AC News · Todos os direitos reservados · Rio Branco, Acre
+          © {new Date().getFullYear()} AC News · Todos os direitos reservados
         </p>
       </div>
     </footer>
