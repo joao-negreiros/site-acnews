@@ -10,6 +10,7 @@ const serif = Source_Serif_4({ variable: "--font-source", subsets: ["latin"] });
 const logoFont = Outfit({ variable: "--font-outfit", subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.acnewsnet.com.br"),
   title: { default: "AC News", template: "%s | AC News" },
   description: "As principais notícias do Brasil e do mundo, atualizadas automaticamente.",
 };

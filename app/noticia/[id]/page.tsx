@@ -12,7 +12,23 @@ type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const a = await getArticle((await params).id);
-  return a ? { title: a.title, description: a.summary } : {};
+  if (!a) return {};
+  // Prévia ao compartilhar o link (WhatsApp, Facebook, X, Telegram): foto da matéria, ou a logo se não houver
+  const images = [a.image ?? "/logo-red.png"];
+  return {
+    title: a.title,
+    description: a.summary,
+    openGraph: {
+      type: "article",
+      siteName: "AC News",
+      locale: "pt_BR",
+      title: a.title,
+      description: a.summary,
+      publishedTime: a.date,
+      images,
+    },
+    twitter: { card: "summary_large_image", title: a.title, description: a.summary, images },
+  };
 }
 
 export default async function ArticlePage({ params }: Props) {
