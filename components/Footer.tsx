@@ -25,7 +25,7 @@ export function Footer() {
           <h2 className={heading}>Editorias</h2>
           <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
             <li>
-              <Link href="/" className="hover:text-white hover:underline">Capa</Link>
+              <Link href="/" className="hover:text-white hover:underline">Início</Link>
             </li>
             {CATEGORIES.map((c) => (
               <li key={c.slug}>

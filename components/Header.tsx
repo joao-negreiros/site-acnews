@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FaMagnifyingGlass } from "react-icons/fa6";
 import { CATEGORIES } from "@/lib/feeds";
 import { getQuotes } from "@/lib/market";
 import { SocialIcons } from "@/components/SocialIcons";
@@ -40,7 +41,7 @@ export async function Header({ active }: { active?: string }) {
       <nav className="bg-brand text-white">
         <ul className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-4 font-[family-name:var(--font-outfit)] text-sm font-semibold uppercase whitespace-nowrap md:justify-center md:text-base">
           <li>
-            <Link href="/" className="block border-b-4 border-transparent px-3 py-3 hover:bg-black/15">Capa</Link>
+            <Link href="/" className="block border-b-4 border-transparent px-3 py-3 hover:bg-black/15">Início</Link>
           </li>
           {CATEGORIES.map((c) => (
             <li key={c.slug}>
@@ -55,6 +56,15 @@ export async function Header({ active }: { active?: string }) {
               </Link>
             </li>
           ))}
+          <li>
+            <Link
+              href="/busca"
+              aria-label="Pesquisar"
+              className="flex items-center border-b-4 border-transparent px-3 py-3 hover:bg-black/15"
+            >
+              <FaMagnifyingGlass size={16} />
+            </Link>
+          </li>
         </ul>
       </nav>
     </header>
