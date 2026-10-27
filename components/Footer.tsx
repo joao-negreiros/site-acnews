@@ -38,9 +38,8 @@ export function Footer() {
 
         <div>
           <h2 className={heading}>Fontes</h2>
-          <p className="text-xs leading-relaxed text-neutral-400">
-            Cada matéria traz o crédito do veículo de origem e a referência à publicação original. Os direitos
-            pertencem aos respectivos veículos e autores.
+          <p className="text-sm leading-relaxed">
+            Matérias creditadas ao veículo de origem e referenciadas à publicação.
           </p>
         </div>
       </div>
