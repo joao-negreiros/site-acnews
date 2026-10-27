@@ -1,5 +1,6 @@
 import { get, put } from "@vercel/blob";
 import type { Article } from "@/lib/feeds";
+import { makeSlug } from "@/lib/slug";
 
 /** Quanto tempo cada matéria fica guardada, contado a partir da data de publicação. */
 export const RETENTION_DAYS = 7;
@@ -15,7 +16,8 @@ export async function readArchive(): Promise<Article[]> {
     const res = await get(PATH, { access: "private" });
     if (!res || res.statusCode !== 200) return [];
     const list = JSON.parse(await new Response(res.stream).text()) as Article[];
-    return list.filter(fresh);
+    // matérias guardadas antes do endereço curto não têm slug: ganham um na leitura
+    return list.filter(fresh).map((a) => ({ ...a, slug: a.slug ?? makeSlug(a.title) }));
   } catch (e) {
     console.error("archive: leitura falhou", e);
     return [];

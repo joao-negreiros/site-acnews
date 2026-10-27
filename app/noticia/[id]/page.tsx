@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
 import { Header } from "@/components/Header";
 import { Photo } from "@/components/Photo";
@@ -32,8 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ArticlePage({ params }: Props) {
-  const a = await getArticle((await params).id);
+  const { id: key } = await params;
+  const a = await getArticle(key);
   if (!a) notFound();
+  // Link antigo (pelo id): leva ao endereço curto
+  if (a.slug && key !== a.slug) permanentRedirect(`/noticia/${a.slug}`);
 
   const date = new Date(a.date).toLocaleString("pt-BR", {
     dateStyle: "long",

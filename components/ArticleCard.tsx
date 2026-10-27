@@ -16,7 +16,7 @@ export function ArticleCard({
 }) {
   return (
     <Link
-      href={`/noticia/${a.id}`}
+      href={`/noticia/${a.slug ?? a.id}`}
       className={`group flex ${featured ? "flex-col gap-4" : "flex-row items-stretch gap-3"}`}
     >
       {a.image &&

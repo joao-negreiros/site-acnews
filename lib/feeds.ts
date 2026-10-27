@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
 import { readArchive, syncArchive } from "@/lib/archive";
+import { makeSlug } from "@/lib/slug";
 import { EXCLUDE, PIN } from "@/lib/site";
 
 export type Category = { slug: string; name: string };
@@ -60,6 +61,8 @@ const LOW_VALUE = /^(V[ÍI]DEOS?:|Previs[ãa]o do tempo|Aul[ãa]o)/i;
 
 export type Article = {
   id: string;
+  /** Endereço curto da matéria (primeiras palavras da manchete); definido em getArticles */
+  slug?: string;
   title: string;
   link: string;
   summary: string;
@@ -308,8 +311,24 @@ export async function fetchLive(): Promise<Article[]> {
   return [...acre, ...national].sort(byDate);
 }
 
+/**
+ * Dá a cada matéria o endereço curto. Se duas matérias caem no mesmo endereço, a mais antiga
+ * fica com ele e a outra ganha o começo do id no fim, para nunca haver endereço repetido.
+ */
+function withSlugs(list: Article[]): Article[] {
+  const taken = new Set<string>();
+  const slugs = new Map<string, string>();
+  for (const a of [...list].sort((x, y) => +new Date(x.date) - +new Date(y.date))) {
+    let s = makeSlug(a.title);
+    if (taken.has(s)) s = `${s}-${a.id.slice(0, 4).toLowerCase()}`;
+    taken.add(s);
+    slugs.set(a.id, s);
+  }
+  return list.map((a) => ({ ...a, slug: slugs.get(a.id)! }));
+}
+
 export async function getArticles(category?: string): Promise<Article[]> {
-  const all = (await fetchLive()).map(clean);
+  const all = withSlugs((await fetchLive()).map(clean));
   await syncArchive(all);
   return category ? all.filter((a) => a.category === category) : all;
 }
@@ -322,7 +341,12 @@ export function timeAgo(iso: string): string {
   return `há ${Math.round(h / 24)} d`;
 }
 
-export async function getArticle(id: string): Promise<Article | undefined> {
+/** Busca pelo endereço curto; o id antigo (links já compartilhados) também é aceito. */
+export async function getArticle(key: string): Promise<Article | undefined> {
+  const hit = (a: Article) => a.slug === key || a.id === key;
   // Vale por 7 dias: se já saiu do feed da fonte, vem do arquivo próprio
-  return (await getArticles()).find((a) => a.id === id) ?? (await readArchive()).find((a) => a.id === id && CATEGORIES.some((c) => c.slug === a.category));
+  return (
+    (await getArticles()).find(hit) ??
+    (await readArchive()).find((a) => hit(a) && CATEGORIES.some((c) => c.slug === a.category))
+  );
 }
