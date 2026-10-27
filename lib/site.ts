@@ -56,12 +56,12 @@ export const CULTURA_TERMOS: string[] = [
 
 /**
  * Espaços de publicidade da home. Para ativar um anúncio, preencha `image` (endereço https
- * da arte, ideal 970x250), `href` (destino) e `alt`. Sem anúncio (null), aparece a moldura vazia.
- *   meio: entre as seções Acre e Política
- *   fim:  depois da última seção, antes do rodapé
+ * da arte), `href` (destino) e `alt`. Sem anúncio (null), aparece a moldura vazia.
+ *   meio:    faixa 970x250, entre as seções Acre e Política
+ *   lateral: retângulo 300x250, na lateral do destaque, no lugar da última matéria
  */
 export type Ad = { image: string; href: string; alt: string } | null;
-export const ADS: Record<"meio" | "fim", Ad> = {
+export const ADS: Record<"meio" | "lateral", Ad> = {
   meio: null,
-  fim: null,
+  lateral: null,
 };

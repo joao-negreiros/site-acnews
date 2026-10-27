@@ -13,7 +13,8 @@ export default async function Home() {
   // O Acre manda na home: destaque e lateral saem dele; sem Acre, cai para o que houver
   const lead = acre.length ? acre : all;
   const hero = lead.find((a) => a.image) ?? lead[0];
-  const side = lead.filter((a) => a !== hero).slice(0, 5);
+  // 4 matérias na lateral; o 5º lugar é o espaço de publicidade
+  const side = lead.filter((a) => a !== hero).slice(0, 4);
   const shown = new Set([hero, ...side]);
 
   if (!hero) {
@@ -30,6 +31,7 @@ export default async function Home() {
           {side.map((a) => (
             <ArticleCard key={a.id} a={a} />
           ))}
+          <AdSlot slot="lateral" />
         </div>
       </section>
 
@@ -57,8 +59,6 @@ export default async function Home() {
           </Fragment>
         );
       })}
-
-      <AdSlot slot="fim" />
     </div>
   );
 }
