@@ -23,8 +23,6 @@ export default async function ArticlePage({ params }: Props) {
     timeZone: "America/Sao_Paulo",
   });
   const paragraphs = a.paragraphs.length ? a.paragraphs : a.summary ? [a.summary] : [];
-  // A linha fina é o resumo; só aparece quando o texto não começa com ele
-  const lead = a.summary && !paragraphs[0]?.startsWith(a.summary.slice(0, 60)) ? a.summary : "";
 
   return (
     <>
@@ -41,21 +39,37 @@ export default async function ArticlePage({ params }: Props) {
       </header>
 
       <article className="flex-1 pb-12">
-        {a.image && (
-          <div className="mx-auto mt-6 max-w-5xl px-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={a.image} alt="" className="mx-auto max-h-[32rem] w-auto max-w-full rounded bg-neutral-200" />
-          </div>
-        )}
-
+        {/* Ordem padrão da matéria: manchete, foto ou vídeo, créditos, texto */}
         <div className="mx-auto mt-8 max-w-2xl px-4">
           <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-5xl md:leading-[1.1]">
             {a.title}
           </h1>
-          {lead && <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-400">{lead}</p>}
+        </div>
 
-          <p className="mt-5 border-t border-neutral-300 pt-3 text-xs leading-relaxed text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
-            {a.author && <strong className="block text-neutral-800 dark:text-neutral-200">{a.author}</strong>}
+        {(a.video || a.image) && (
+          <div className="mx-auto mt-6 max-w-3xl px-4">
+            {/* Moldura de tamanho fixo (3:2), igual para qualquer foto ou vídeo */}
+            <div className="aspect-[3/2] w-full overflow-hidden rounded bg-neutral-100">
+              {a.video ? (
+                <video
+                  src={a.video}
+                  poster={a.image}
+                  controls
+                  preload="metadata"
+                  playsInline
+                  className="h-full w-full bg-black object-contain"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={a.image} alt="" className="h-full w-full object-cover" />
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="mx-auto mt-4 max-w-2xl px-4">
+          <p className="border-b border-neutral-300 pb-3 text-xs leading-relaxed text-neutral-600">
+            {a.author && <strong className="block text-neutral-800">{a.author}</strong>}
             Fonte: {a.source}
             <br />
             {date}

@@ -55,6 +55,7 @@ export type Article = {
   link: string;
   summary: string;
   image?: string;
+  video?: string;
   author?: string;
   /** Parágrafos em texto puro, extraídos do que o próprio feed entrega */
   paragraphs: string[];
@@ -97,13 +98,25 @@ function toParagraphs(html: string): string[] {
 const stripHtml = (s: string) =>
   s.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 
+/** Só endereços https; descarta logotipos/SVG (não são foto) e pede a versão grande das miniaturas da CNN. */
+function safeImage(url?: string): string | undefined {
+  if (!url || !/^https:\/\//i.test(url) || /\.svg(\?|$)|logo/i.test(url)) return undefined;
+  return url.replace(/(admin\.cnnbrasil\.com\.br\/[^?]*)\?w=\d+$/, "$1");
+}
+
 function findImage(item: Record<string, any>, html: string): string | undefined {
   const media = arr(item["media:content"])[0] ?? arr(item["media:thumbnail"])[0];
-  if (media?.["@_url"]) return media["@_url"];
+  if (media?.["@_url"]) return safeImage(media["@_url"]);
   if (item.enclosure?.["@_url"] && String(item.enclosure["@_type"] ?? "").startsWith("image")) {
-    return item.enclosure["@_url"];
+    return safeImage(item.enclosure["@_url"]);
   }
-  return html.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1];
+  return safeImage(html.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1]);
+}
+
+/** Primeiro vídeo MP4 hospedado em arquivo (nada de iframes ou players de terceiros). */
+function findVideo(html: string): string | undefined {
+  const url = html.match(/<(?:video|source)[^>]+src=["']([^"']+\.mp4[^"']*)["']/i)?.[1];
+  return url && /^https:\/\//i.test(url) ? url : undefined;
 }
 
 const makeId = (link: string) => createHash("sha1").update(link).digest("base64url").slice(0, 12);
@@ -132,6 +145,7 @@ async function fetchSource(src: Source): Promise<Article[]> {
         link,
         summary: decode(stripHtml(rawDesc)).slice(0, 220),
         image: findImage(item, rawDesc + body),
+        video: findVideo(body),
         source: src.name,
         category: src.category === "auto" ? (cnnCategory(link) ?? "") : src.category,
         date: new Date(text(item.pubDate) || Date.now()).toISOString(),
