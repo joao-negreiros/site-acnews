@@ -60,9 +60,11 @@ export const CULTURA_TERMOS: string[] = [
  * da arte), `href` (destino) e `alt`. Sem anúncio (null), aparece a moldura vazia.
  *   meio:    faixa 970x250, entre as seções Acre e Política
  *   lateral: retângulo 300x250, na lateral do destaque, no lugar da última matéria
+ *   materia: faixa 728x90, ao fim de cada matéria, depois do texto e antes da nota de referência
  */
 export type Ad = { image: string; href: string; alt: string } | null;
-export const ADS: Record<"meio" | "lateral", Ad> = {
+export const ADS: Record<"meio" | "lateral" | "materia", Ad> = {
   meio: null,
   lateral: null,
+  materia: null,
 };

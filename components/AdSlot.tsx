@@ -4,6 +4,7 @@ import { ADS } from "@/lib/site";
 const SHAPE: Record<keyof typeof ADS, { box: string; frame: string }> = {
   meio: { box: "mx-auto w-full max-w-[970px]", frame: "aspect-[32/10] md:aspect-[97/25]" }, // 970x250
   lateral: { box: "w-full max-w-[300px]", frame: "aspect-[6/5]" }, // 300x250
+  materia: { box: "mx-auto w-full max-w-[728px]", frame: "aspect-[728/90]" }, // 728x90
 };
 
 /**

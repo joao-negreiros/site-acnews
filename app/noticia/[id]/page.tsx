@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdSlot } from "@/components/AdSlot";
 import { Photo } from "@/components/Photo";
 import { CATEGORIES, getArticle } from "@/lib/feeds";
 
@@ -79,6 +80,10 @@ export default async function ArticlePage({ params }: Props) {
             {paragraphs.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
+          </div>
+
+          <div className="mt-10">
+            <AdSlot slot="materia" />
           </div>
 
           {/* Crédito discreto: vale para todas as matérias, já publicadas e futuras */}
