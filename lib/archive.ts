@@ -1,51 +1,73 @@
-import { get, put } from "@vercel/blob";
+import { del, get, list, put } from "@vercel/blob";
 import type { Article } from "@/lib/feeds";
-import { makeSlug } from "@/lib/slug";
 
-/** Quanto tempo cada matéria fica guardada, contado a partir da data de publicação. */
+/**
+ * Arquivo próprio: uma matéria por arquivo em articles/<endereço>~<id>.json. Um arquivo por
+ * matéria evita que atualizações simultâneas do site se atropelem, como ocorria com um arquivo só.
+ */
+
+/** Quanto tempo cada matéria fica guardada, contado a partir de quando entrou no arquivo. */
 export const RETENTION_DAYS = 7;
 
-const PATH = "archive.json";
+const PREFIX = "articles/";
 const enabled = () => !!process.env.BLOB_READ_WRITE_TOKEN;
-const fresh = (a: Article) => Date.now() - +new Date(a.date) < RETENTION_DAYS * 86_400_000;
+const expired = (uploadedAt: Date) => Date.now() - +uploadedAt >= RETENTION_DAYS * 86_400_000;
 
-/** Matérias guardadas ainda dentro do prazo. Sem armazenamento configurado ou com erro, devolve vazio. */
-export async function readArchive(): Promise<Article[]> {
+export type Stored = { slug: string; id: string; pathname: string; uploadedAt: Date };
+
+/** Lista o que está guardado e ainda dentro do prazo. Sem armazenamento configurado ou com erro, devolve vazio. */
+export async function listArchive(): Promise<Stored[]> {
   if (!enabled()) return [];
   try {
-    const res = await get(PATH, { access: "private" });
-    if (!res || res.statusCode !== 200) return [];
-    const list = JSON.parse(await new Response(res.stream).text()) as Article[];
-    // matérias guardadas antes do endereço curto não têm slug: ganham um na leitura
-    return list.filter(fresh).map((a) => ({ ...a, slug: a.slug ?? makeSlug(a.title) }));
+    const out: Stored[] = [];
+    let cursor: string | undefined;
+    do {
+      const r = await list({ prefix: PREFIX, cursor, limit: 1000 });
+      for (const b of r.blobs) {
+        const m = /^articles\/(.+)~(.+)\.json$/.exec(b.pathname);
+        if (m) out.push({ slug: m[1], id: m[2], pathname: b.pathname, uploadedAt: new Date(b.uploadedAt) });
+      }
+      cursor = r.hasMore ? r.cursor : undefined;
+    } while (cursor);
+    return out;
   } catch (e) {
-    console.error("archive: leitura falhou", e);
+    console.error("archive: listagem falhou", e);
     return [];
   }
 }
 
-/**
- * Guarda as matérias novas e apaga as que passaram de 7 dias. Só regrava o arquivo quando
- * algo mudou (matéria nova ou vencida), para não gravar a cada atualização do site.
- */
-export async function syncArchive(live: Article[]): Promise<void> {
+/** Lê uma matéria guardada, pelo endereço curto ou pelo id (links antigos). */
+export async function readArchived(key: string, stored: Stored[]): Promise<Article | undefined> {
+  const hit = stored.find((s) => (s.slug === key || s.id === key) && !expired(s.uploadedAt));
+  if (!hit) return undefined;
+  try {
+    const res = await get(hit.pathname, { access: "private" });
+    if (!res || res.statusCode !== 200) return undefined;
+    return JSON.parse(await new Response(res.stream).text()) as Article;
+  } catch (e) {
+    console.error("archive: leitura falhou", e);
+    return undefined;
+  }
+}
+
+/** Guarda as matérias novas (já com slug) e apaga as que passaram de 7 dias. */
+export async function syncArchive(live: Article[], stored: Stored[]): Promise<void> {
   if (!enabled()) return;
   try {
-    const res = await get(PATH, { access: "private" });
-    const stored: Article[] =
-      res && res.statusCode === 200 ? JSON.parse(await new Response(res.stream).text()) : [];
-    const keep = stored.filter(fresh);
-    const have = new Set(keep.map((a) => a.id));
-    const added = live.filter((a) => fresh(a) && !have.has(a.id));
-    if (!added.length && keep.length === stored.length) return;
-
-    const merged = [...added, ...keep].sort((a, b) => +new Date(b.date) - +new Date(a.date));
-    await put(PATH, JSON.stringify(merged), {
-      access: "private",
-      contentType: "application/json",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-    });
+    const have = new Set(stored.map((s) => s.id));
+    const added = live.filter((a) => a.slug && !have.has(a.id));
+    const old = stored.filter((s) => expired(s.uploadedAt));
+    await Promise.all([
+      ...added.map((a) =>
+        put(`${PREFIX}${a.slug}~${a.id}.json`, JSON.stringify(a), {
+          access: "private",
+          contentType: "application/json",
+          addRandomSuffix: false,
+          allowOverwrite: true,
+        }),
+      ),
+      old.length ? del(old.map((s) => s.pathname)) : Promise.resolve(),
+    ]);
   } catch (e) {
     console.error("archive: gravação falhou", e);
   }

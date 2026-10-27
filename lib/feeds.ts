@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
-import { readArchive, syncArchive } from "@/lib/archive";
+import { listArchive, readArchived, syncArchive, type Stored } from "@/lib/archive";
 import { makeSlug } from "@/lib/slug";
 import { EXCLUDE, PIN } from "@/lib/site";
 
@@ -312,24 +312,35 @@ export async function fetchLive(): Promise<Article[]> {
 }
 
 /**
- * Dá a cada matéria o endereço curto. Se duas matérias caem no mesmo endereço, a mais antiga
- * fica com ele e a outra ganha o começo do id no fim, para nunca haver endereço repetido.
+ * Dá a cada matéria o endereço curto. Quem já está no arquivo mantém o endereço que tinha. Se duas
+ * matérias caem no mesmo endereço, a mais antiga fica com ele e a outra ganha o começo do id no fim,
+ * para nunca haver endereço repetido.
  */
-function withSlugs(list: Article[]): Article[] {
-  const taken = new Set<string>();
+function withSlugs(list: Article[], stored: Stored[]): Article[] {
+  const own = new Map(stored.map((s) => [s.id, s.slug]));
+  const taken = new Set(stored.map((s) => s.slug));
   const slugs = new Map<string, string>();
   for (const a of [...list].sort((x, y) => +new Date(x.date) - +new Date(y.date))) {
-    let s = makeSlug(a.title);
-    if (taken.has(s)) s = `${s}-${a.id.slice(0, 4).toLowerCase()}`;
-    taken.add(s);
+    let s = own.get(a.id);
+    if (!s) {
+      s = makeSlug(a.title);
+      if (taken.has(s)) s = `${s}-${a.id.slice(0, 4).toLowerCase()}`;
+      taken.add(s);
+    }
     slugs.set(a.id, s);
   }
   return list.map((a) => ({ ...a, slug: slugs.get(a.id)! }));
 }
 
+async function load(): Promise<{ all: Article[]; stored: Stored[] }> {
+  const [live, stored] = await Promise.all([fetchLive(), listArchive()]);
+  const all = withSlugs(live.map(clean), stored);
+  await syncArchive(all, stored);
+  return { all, stored };
+}
+
 export async function getArticles(category?: string): Promise<Article[]> {
-  const all = withSlugs((await fetchLive()).map(clean));
-  await syncArchive(all);
+  const { all } = await load();
   return category ? all.filter((a) => a.category === category) : all;
 }
 
@@ -343,10 +354,8 @@ export function timeAgo(iso: string): string {
 
 /** Busca pelo endereço curto; o id antigo (links já compartilhados) também é aceito. */
 export async function getArticle(key: string): Promise<Article | undefined> {
-  const hit = (a: Article) => a.slug === key || a.id === key;
+  const { all, stored } = await load();
   // Vale por 7 dias: se já saiu do feed da fonte, vem do arquivo próprio
-  return (
-    (await getArticles()).find(hit) ??
-    (await readArchive()).find((a) => hit(a) && CATEGORIES.some((c) => c.slug === a.category))
-  );
+  const found = all.find((a) => a.slug === key || a.id === key) ?? (await readArchived(key, stored));
+  return found && CATEGORIES.some((c) => c.slug === found.category) ? found : undefined;
 }
