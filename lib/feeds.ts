@@ -90,16 +90,45 @@ const decode = (s: string) =>
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">");
 
+/** Chamados de rede social e "leia também" que vêm misturados ao texto dos feeds. */
+const NOISE =
+  /^(O post .* apareceu primeiro|Leia (mais|também)|Veja (também|mais|os vídeos)|Participe d[oa]|Clique aqui|Siga (o|a|nosso|nossa)|Receba (as )?notícias|Assine|Acesse o canal)/i;
+
+/** Último recurso para texto sem nenhuma quebra: agrupa 2 a 3 frases por parágrafo. */
+function chunkSentences(text: string): string[] {
+  const sentences = text.split(/(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ"“(])/);
+  const out: string[] = [];
+  let cur = "";
+  let n = 0;
+  for (const s of sentences) {
+    cur = cur ? `${cur} ${s}` : s;
+    n++;
+    if (cur.length >= 300 || n >= 3) {
+      out.push(cur);
+      cur = "";
+      n = 0;
+    }
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+
 function toParagraphs(html: string): string[] {
-  return decode(
+  const text = decode(
     html
       .replace(/<(script|style|iframe)[\s\S]*?<\/\1>/gi, "")
       .replace(/<\/(p|div|li|h[1-6]|blockquote)>|<br\s*\/?>/gi, "\n\n")
       .replace(/<[^>]*>/g, ""),
-  )
-    .split(/\n{2,}/)
-    .map((p) => p.replace(/\s+/g, " ").trim())
-    .filter((p) => p && !/^(O post .* apareceu primeiro|Leia mais|Veja também)/i.test(p));
+  );
+  // Feeds como o do G1 separam parágrafos por uma quebra simples, sem marcas HTML
+  let parts = text.split(/\n{2,}/);
+  if (parts.length <= 1) parts = text.split(/\n+/);
+  parts = parts.map((p) => p.replace(/\s+/g, " ").trim()).filter((p) => p && !NOISE.test(p));
+  // Parágrafo gigante (texto corrido sem quebras): quebra por frases
+  return parts
+    .flatMap((p) => (p.length > 800 ? chunkSentences(p) : [p]))
+    // Bloco enorme sem nenhuma frase = lista ou menu que perdeu a formatação (ex.: locais de votação)
+    .filter((p) => p.length <= 800 || /[.!?]\s/.test(p));
 }
 
 const stripHtml = (s: string) =>
@@ -142,13 +171,15 @@ async function fetchSource(src: Source): Promise<Article[]> {
       const rawDesc = text(item.description) || text(item["content:encoded"]);
       const body = text(item["content:encoded"]) || rawDesc;
       const link = text(item.link).trim();
-      const paragraphs = toParagraphs(body);
+      const title = stripHtml(decode(text(item.title)));
+      // O G1 repete o título como primeira linha do texto
+      const paragraphs = toParagraphs(body).filter((p) => norm(p) !== norm(title));
       return {
         id: makeId(link),
         author: text(item["dc:creator"]) || undefined,
         paragraphs,
         fullText: paragraphs.join(" ").length > 700,
-        title: stripHtml(decode(text(item.title))),
+        title,
         link,
         summary: decode(stripHtml(rawDesc)).slice(0, 220),
         image: findImage(item, rawDesc + body),
