@@ -22,3 +22,60 @@ body {
   color: var(--foreground);
   font-family: var(--font-source), Georgia, serif;
 }
+
+/* Preloader: tela branca com a logo; cada letra sobe e aparece em sequência, depois a tela some */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+  animation: preloader-out 350ms ease 1.15s forwards;
+}
+
+.preloader-logo {
+  position: relative;
+  width: min(80vw, 420px);
+}
+
+.preloader-sizer {
+  width: 100%;
+  height: auto;
+  visibility: hidden;
+}
+
+.preloader-glyph {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  animation: preloader-glyph 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+}
+
+@keyframes preloader-glyph {
+  from {
+    opacity: 0;
+    transform: translateY(45%) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes preloader-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* Sem animação para quem prefere movimento reduzido: o preloader nem aparece */
+@media (prefers-reduced-motion: reduce) {
+  .preloader {
+    display: none;
+  }
+}

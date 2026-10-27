@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Source_Serif_4 } from "next/font/google";
 import { Footer } from "@/components/Footer";
+import { Preloader } from "@/components/Preloader";
 import "./globals.css";
 
 // Fonte única do portal (exceto a logomarca, que é imagem)
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={`${serif.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <Preloader />
         {children}
         <Footer />
       </body>
