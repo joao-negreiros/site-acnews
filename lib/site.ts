@@ -42,17 +42,10 @@ export const EXCLUDE: string[] = [
   "separacao",
   "namoro",
   "romance com",
-];
-
-/**
- * Cultura: só entra matéria que mencione algum destes termos no título ou no resumo.
- * É o que deixa a fofoca de fora; acrescente termos para abrir o filtro.
- */
-export const CULTURA_TERMOS: string[] = [
-  "cinema", "filme", "documentario", "serie", "festival", "teatro", "espetaculo", "danca", "ballet",
-  "musica", "album", "show", "turne", "orquestra", "concerto",
-  "livro", "literat", "escritor", "poesia", "jabuti", "oscar", "grammy", "premio",
-  "exposicao", "museu", "galeria", "artes", "patrimonio", "cultura",
+  // esporte: dicas de jogo e fantasy, que não são notícia
+  "palpite",
+  "gato-mestre",
+  "cartola",
 ];
 
 /**

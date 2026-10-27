@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
 import { readArchive, syncArchive } from "@/lib/archive";
-import { CULTURA_TERMOS, EXCLUDE, PIN } from "@/lib/site";
+import { EXCLUDE, PIN } from "@/lib/site";
 
 export type Category = { slug: string; name: string };
 
@@ -9,10 +9,10 @@ export type Category = { slug: string; name: string };
 export const CATEGORIES: Category[] = [
   { slug: "acre", name: "Acre" },
   { slug: "politica", name: "Política" },
+  { slug: "esporte", name: "Esporte" },
   { slug: "brasil", name: "Brasil" },
   { slug: "mundo", name: "Mundo" },
   { slug: "economia", name: "Economia" },
-  { slug: "cultura", name: "Cultura" },
 ];
 
 /** category "auto": a editoria sai do caminho do link (ver cnnCategory). */
@@ -32,12 +32,13 @@ export const SOURCES: Source[] = [
   { name: "G1", url: "https://g1.globo.com/rss/g1/", category: "brasil" },
   { name: "G1", url: "https://g1.globo.com/rss/g1/mundo/", category: "mundo" },
   { name: "G1", url: "https://g1.globo.com/rss/g1/economia/", category: "economia" },
-  { name: "G1", url: "https://g1.globo.com/rss/g1/pop-arte/", category: "cultura" },
+  { name: "Agência Brasil", url: "https://agenciabrasil.ebc.com.br/rss/esportes/feed.xml", category: "esporte" },
+  { name: "ac24horas", url: "https://ac24horas.com/category/esporte/feed/", category: "esporte" },
   { name: "Agência Brasil", url: "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml", category: "brasil" },
 ];
 
 /** Quantas matérias nacionais/internacionais cada editoria mostra, e a janela de tempo considerada. */
-const CAP: Record<string, number> = { politica: 4, brasil: 5, mundo: 3, economia: 3, cultura: 4 };
+const CAP: Record<string, number> = { politica: 4, esporte: 4, brasil: 5, mundo: 3, economia: 3 };
 const WINDOW_HOURS = 36;
 /** Tamanho mínimo do texto (caracteres) para a matéria ser considerada completa. */
 const MIN_BODY = 300;
@@ -48,10 +49,10 @@ const CNN_SECTIONS: Record<string, string> = {
   politica: "politica",
   eleicoes: "politica",
   nacional: "brasil",
-  pop: "cultura",
+  esportes: "esporte",
 };
 
-/** Editoria da CNN pelo primeiro trecho do caminho; o que não está no mapa (pop, esportes...) fica de fora. */
+/** Editoria da CNN pelo primeiro trecho do caminho; o que não está no mapa (pop, saúde...) fica de fora. */
 const cnnCategory = (link: string): string | undefined => CNN_SECTIONS[link.split("/")[3]];
 
 /** Itens de pouco valor do G1 (telejornal em vídeo, previsão do tempo, aulão). */
@@ -265,9 +266,7 @@ function selectRelevant(pool: Article[]): Article[] {
   const since = Date.now() - WINDOW_HOURS * 3600_000;
   const recent = pool
     .filter((a) => +new Date(a.date) >= since)
-    .filter((a) => !EXCLUDE.some((k) => hasTerm(norm(`${a.title} ${a.link}`), k)))
-    // Cultura: só o que fala de cultura de fato (deixa a fofoca de fora)
-    .filter((a) => a.category !== "cultura" || CULTURA_TERMOS.some((k) => hasTerm(norm(`${a.title} ${a.summary}`), k)));
+    .filter((a) => !EXCLUDE.some((k) => hasTerm(norm(`${a.title} ${a.link}`), k)));
   const tk = new Map(recent.map((a) => [a, tokens(a.title)]));
 
   const score = (a: Article) => {
@@ -325,5 +324,5 @@ export function timeAgo(iso: string): string {
 
 export async function getArticle(id: string): Promise<Article | undefined> {
   // Vale por 7 dias: se já saiu do feed da fonte, vem do arquivo próprio
-  return (await getArticles()).find((a) => a.id === id) ?? (await readArchive()).find((a) => a.id === id);
+  return (await getArticles()).find((a) => a.id === id) ?? (await readArchive()).find((a) => a.id === id && CATEGORIES.some((c) => c.slug === a.category));
 }
