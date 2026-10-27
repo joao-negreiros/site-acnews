@@ -3,7 +3,16 @@ import { CATEGORIES, timeAgo, type Article } from "@/lib/feeds";
 
 const catName = (slug: string) => CATEGORIES.find((c) => c.slug === slug)?.name ?? slug;
 
-export function ArticleCard({ a, featured = false }: { a: Article; featured?: boolean }) {
+/** `showCategory={false}` dentro de uma editoria, onde o rótulo repetiria o título da seção. */
+export function ArticleCard({
+  a,
+  featured = false,
+  showCategory = true,
+}: {
+  a: Article;
+  featured?: boolean;
+  showCategory?: boolean;
+}) {
   return (
     <Link
       href={`/noticia/${a.id}`}
@@ -21,9 +30,11 @@ export function ArticleCard({ a, featured = false }: { a: Article; featured?: bo
         />
       )}
       <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand">
-          {catName(a.category)}
-        </p>
+        {showCategory && (
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand">
+            {catName(a.category)}
+          </p>
+        )}
         <h3
           className={`font-serif font-bold leading-snug group-hover:underline ${
             featured ? "text-2xl md:text-3xl mt-1" : "text-base"

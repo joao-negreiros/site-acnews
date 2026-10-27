@@ -17,11 +17,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
   return (
     <>
-      <h1 className="mb-6 border-b-2 border-brand pb-1 font-serif text-3xl font-black">{cat.name}</h1>
+      <h1 className="mb-6 border-b-2 border-brand pb-2 font-serif text-4xl font-black md:text-5xl">{cat.name}</h1>
       {articles.length ? (
         <div className="grid gap-6 sm:grid-cols-2">
           {articles.map((a) => (
-            <ArticleCard key={a.id} a={a} />
+            <ArticleCard key={a.id} a={a} showCategory={false} />
           ))}
         </div>
       ) : (

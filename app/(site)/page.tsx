@@ -38,15 +38,15 @@ export default async function Home() {
         if (!items.length) return null;
         return (
           <section key={c.slug}>
-            <div className="mb-4 flex items-baseline justify-between border-b-2 border-brand pb-1">
-              <h2 className="font-serif text-xl font-black">{c.name}</h2>
+            <div className="mb-5 flex items-baseline justify-between border-b-2 border-brand pb-2">
+              <h2 className="font-serif text-3xl font-black md:text-4xl">{c.name}</h2>
               <Link href={`/c/${c.slug}`} className="text-sm text-brand hover:underline">
                 Ver tudo
               </Link>
             </div>
             <div className="grid gap-6 sm:grid-cols-2">
               {items.map((a) => (
-                <ArticleCard key={a.id} a={a} />
+                <ArticleCard key={a.id} a={a} showCategory={false} />
               ))}
             </div>
           </section>
