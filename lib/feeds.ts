@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
+import { readArchive, syncArchive } from "@/lib/archive";
 import { CULTURA_TERMOS, EXCLUDE, PIN } from "@/lib/site";
 
 export type Category = { slug: string; name: string };
@@ -310,6 +311,7 @@ export async function fetchLive(): Promise<Article[]> {
 
 export async function getArticles(category?: string): Promise<Article[]> {
   const all = (await fetchLive()).map(clean);
+  await syncArchive(all);
   return category ? all.filter((a) => a.category === category) : all;
 }
 
@@ -322,5 +324,6 @@ export function timeAgo(iso: string): string {
 }
 
 export async function getArticle(id: string): Promise<Article | undefined> {
-  return (await getArticles()).find((a) => a.id === id);
+  // Vale por 7 dias: se já saiu do feed da fonte, vem do arquivo próprio
+  return (await getArticles()).find((a) => a.id === id) ?? (await readArchive()).find((a) => a.id === id);
 }
