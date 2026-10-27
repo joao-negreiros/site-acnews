@@ -9,7 +9,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-brand: #de0100;
+  --color-brand: #cc0000;
   --font-sans: var(--font-source), Georgia, serif;
   --font-serif: var(--font-source), Georgia, serif;
 }
