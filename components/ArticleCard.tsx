@@ -35,7 +35,7 @@ export function ArticleCard({ a, featured = false }: { a: Article; featured?: bo
           <p className="mt-2 text-neutral-600 dark:text-neutral-400">{a.summary}</p>
         )}
         <p className="mt-1 text-xs text-neutral-500">
-          {a.source} · {timeAgo(a.date)}
+          {timeAgo(a.date)}
         </p>
       </div>
     </Link>
