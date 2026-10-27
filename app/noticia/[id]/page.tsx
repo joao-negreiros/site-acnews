@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
 import { Header } from "@/components/Header";
 import { Photo } from "@/components/Photo";
+import { ShareLinks } from "@/components/ShareLinks";
 import { getArticle } from "@/lib/feeds";
 
 export const revalidate = 600;
@@ -64,6 +65,8 @@ export default async function ArticlePage({ params }: Props) {
             <br />
             {date}
           </p>
+
+          <ShareLinks title={a.title} />
 
           <div className="mt-8 space-y-5 text-xl leading-8">
             {paragraphs.map((p, i) => (
