@@ -162,6 +162,25 @@ function findVideo(html: string): string | undefined {
 
 const makeId = (link: string) => createHash("sha1").update(link).digest("base64url").slice(0, 12);
 
+/**
+ * Os portais do Acre também publicam notícia de fora do estado. Quando o próprio portal marca a
+ * matéria como nacional (ou de outra região), ela sai da editoria Acre e vai para a disputa das
+ * editorias nacionais, onde só entra se for muito relevante.
+ */
+const FORA_DO_ACRE = ["nacional", "brasil", "mundo", "internacional", "regiao norte"];
+
+const GUESS: [string, string[]][] = [
+  ["politica", ["lula", "bolsonaro", "milei", "congresso", "senado", "camara dos deputados", "stf", "ministro", "presidente", "eleic", "governo federal", "partido", "policia federal", "planalto", "casa rosada"]],
+  ["economia", ["economia", "inflacao", "juros", "dolar", "pib", "combustivel", "diesel", "subvencao", "imposto", "mercado", "banco central", "selic"]],
+  ["esporte", ["futebol", "campeonato", "flamengo", "corinthians", "palmeiras", "selecao", "libertadores", "copa do"]],
+];
+
+function acreOrNational(tags: string[], text: string): string {
+  if (!tags.some((t) => FORA_DO_ACRE.includes(t))) return "acre";
+  const t = norm(text);
+  return GUESS.find(([, terms]) => terms.some((k) => hasTerm(t, k)))?.[0] ?? "brasil";
+}
+
 async function fetchSource(src: Source): Promise<Article[]> {
   try {
     const res = await fetch(src.url, {
@@ -179,6 +198,8 @@ async function fetchSource(src: Source): Promise<Article[]> {
       const title = stripHtml(decode(text(item.title)));
       // O G1 repete o título como primeira linha do texto
       const paragraphs = toParagraphs(body).filter((p) => norm(p) !== norm(title));
+      const tags = arr<any>(item.category).map((c) => norm(String(typeof c === "object" ? (c?.["#text"] ?? "") : c)));
+      const category = src.category === "auto" ? (cnnCategory(link) ?? "") : src.category;
       return {
         id: makeId(link),
         author: text(item["dc:creator"]) || undefined,
@@ -190,7 +211,7 @@ async function fetchSource(src: Source): Promise<Article[]> {
         image: findImage(item, rawDesc + body),
         video: findVideo(body),
         source: src.name,
-        category: src.category === "auto" ? (cnnCategory(link) ?? "") : src.category,
+        category: category === "acre" ? acreOrNational(tags, `${title} ${rawDesc}`) : category,
         date: new Date(text(item.pubDate) || Date.now()).toISOString(),
       };
     });
