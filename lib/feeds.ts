@@ -15,12 +15,14 @@ export const CATEGORIES: Category[] = [
 ];
 
 /** category "auto": a editoria sai do caminho do link (ver cnnCategory). */
-type Source = { name: string; url: string; category: string };
+type Source = { name: string; url: string; category: string; excerptOnly?: boolean };
 
 export const SOURCES: Source[] = [
   // Acre: todas as matérias entram
   { name: "ac24horas", url: "https://ac24horas.com/feed/", category: "acre" },
-  { name: "Contilnet Notícias", url: "https://contilnetnoticias.com.br/feed/", category: "acre" },
+  // excerptOnly: o feed traz só um trecho de ~200 caracteres, então a fonte fica de fora.
+  // Quando a Contilnet liberar um feed com texto completo, é só remover a marca.
+  { name: "Contilnet Notícias", url: "https://contilnetnoticias.com.br/feed/", category: "acre", excerptOnly: true },
   { name: "Integração", url: "https://integracaonet.com/feed/", category: "acre" },
   { name: "G1 Acre", url: "https://g1.globo.com/rss/g1/ac/", category: "acre" },
   // Nacional e internacional: só as mais relevantes (ver selectRelevant)
@@ -36,6 +38,8 @@ export const SOURCES: Source[] = [
 /** Quantas matérias nacionais/internacionais cada editoria mostra, e a janela de tempo considerada. */
 const CAP: Record<string, number> = { politica: 4, brasil: 5, mundo: 3, economia: 3, cultura: 4 };
 const WINDOW_HOURS = 36;
+/** Tamanho mínimo do texto (caracteres) para a matéria ser considerada completa. */
+const MIN_BODY = 300;
 
 const CNN_SECTIONS: Record<string, string> = {
   internacional: "mundo",
@@ -252,10 +256,16 @@ function selectRelevant(pool: Article[]): Article[] {
   return Object.keys(CAP).flatMap((cat) => unique.filter((a) => a.category === cat).slice(0, CAP[cat]));
 }
 
+/** Só entra matéria com texto completo: corpo de tamanho razoável e que não termine cortado (reticências). */
+function isComplete(a: Article): boolean {
+  const body = a.paragraphs.join(" ").trim();
+  return body.length >= MIN_BODY && !/(\.\.\.|…|\[…\]|\[\.\.\.\])\s*$/.test(body);
+}
+
 export async function fetchLive(): Promise<Article[]> {
-  const all = (await Promise.all(SOURCES.map(fetchSource))).flat();
+  const all = (await Promise.all(SOURCES.filter((s) => !s.excerptOnly).map(fetchSource))).flat();
   const seen = new Set<string>();
-  const unique = all.filter((a) => a.title && a.link && !seen.has(a.link) && seen.add(a.link));
+  const unique = all.filter((a) => a.title && a.link && !seen.has(a.link) && seen.add(a.link) && isComplete(a));
 
   // Acre: tudo entra; quando vários portais dão o mesmo assunto, fica a versão com mais texto
   const acre = dedupe(
