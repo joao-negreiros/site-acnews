@@ -22,17 +22,19 @@ export function ArticleCard({
       {a.image &&
         (featured ? (
           // Destaque: foto inteira na moldura 16:9, sem cortar
-          <Photo src={a.image} className="aspect-video w-full" eager />
+          <Photo src={a.image} className="aspect-video w-full" eager zoom />
         ) : (
           // Miniatura: estica até a altura do texto (imagem e texto ocupam o mesmo tamanho);
-          // recorte ancorado no alto para preservar rostos
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={a.image}
-            alt=""
-            loading="lazy"
-            className="min-h-20 w-28 shrink-0 self-stretch rounded bg-neutral-200 object-cover object-top"
-          />
+          // recorte ancorado no alto para preservar rostos; zoom suave ao passar o mouse
+          <div className="relative min-h-20 w-28 shrink-0 self-stretch overflow-hidden rounded bg-neutral-200">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={a.image}
+              alt=""
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            />
+          </div>
         ))}
       <div className={`min-w-0 ${featured ? "" : "flex flex-col justify-between"}`}>
         {showCategory && (
