@@ -60,8 +60,19 @@ export default async function ArticlePage({ params }: Props) {
                   className="h-full w-full bg-black object-contain"
                 />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={a.image} alt="" className="h-full w-full object-cover" />
+                <div className="relative h-full w-full">
+                  {/* Fundo: a própria foto ampliada e desfocada, para preencher o que sobrar nas laterais */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={a.image}
+                    alt=""
+                    aria-hidden
+                    className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
+                  />
+                  {/* Foto inteira, sem corte, centralizada na moldura */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={a.image} alt="" className="relative h-full w-full object-contain" />
+                </div>
               )}
             </div>
           </div>
