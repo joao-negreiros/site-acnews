@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
+import { Header } from "@/components/Header";
 import { Photo } from "@/components/Photo";
-import { CATEGORIES, getArticle } from "@/lib/feeds";
+import { getArticle } from "@/lib/feeds";
 
 export const revalidate = 600;
 
@@ -18,7 +18,6 @@ export default async function ArticlePage({ params }: Props) {
   const a = await getArticle((await params).id);
   if (!a) notFound();
 
-  const cat = CATEGORIES.find((c) => c.slug === a.category);
   const date = new Date(a.date).toLocaleString("pt-BR", {
     dateStyle: "long",
     timeStyle: "short",
@@ -28,17 +27,7 @@ export default async function ArticlePage({ params }: Props) {
 
   return (
     <>
-      {/* Faixa enxuta: só o logo (volta para a home) e o nome da editoria */}
-      <header className="bg-brand text-white">
-        <div className="mx-auto grid h-14 max-w-5xl grid-cols-[1fr_auto_1fr] items-center px-4">
-          <Link href="/" aria-label="AC News - página inicial">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-white.png" alt="AC News" className="h-6 w-auto" />
-          </Link>
-          <span className="font-[family-name:var(--font-outfit)] text-base font-semibold uppercase">{cat?.name}</span>
-          <span />
-        </div>
-      </header>
+      <Header />
 
       <article className="flex-1 pb-12">
         {/* Ordem padrão da matéria: manchete, foto ou vídeo, créditos, texto */}
