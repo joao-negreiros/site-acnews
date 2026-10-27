@@ -10,8 +10,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-brand: #de0100;
-  --font-sans: var(--font-geist-sans);
-  --font-serif: var(--font-merri), Georgia, serif;
+  --font-sans: var(--font-source), Georgia, serif;
+  --font-serif: var(--font-source), Georgia, serif;
 }
 
 /* Site sempre em fundo branco: o variante dark: nunca é ativado */
@@ -20,5 +20,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-source), Georgia, serif;
 }
