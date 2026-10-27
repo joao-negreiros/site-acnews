@@ -67,25 +67,17 @@ export default async function ArticlePage({ params }: Props) {
             ))}
           </div>
 
-          <aside className="mt-12 border-l-4 border-brand bg-neutral-100 p-4 text-sm dark:bg-neutral-900">
-            <p>
-              Matéria originalmente publicada por <strong>{a.source}</strong>
-              {a.author ? `, de autoria de ${a.author}` : ""}, em {date}. Todos os direitos pertencem à fonte.
-            </p>
-            {!a.fullText && (
-              <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-                {paragraphs.length
-                  ? "A fonte disponibiliza apenas o resumo desta matéria."
-                  : "A fonte disponibiliza apenas o título e a imagem desta matéria."}
-              </p>
-            )}
+          {/* Crédito discreto: vale para todas as matérias, já publicadas e futuras */}
+          <aside className="mt-10 border-l-2 border-brand pl-3 text-xs leading-relaxed text-neutral-500">
+            Publicado originalmente por <strong className="font-semibold">{a.source}</strong>
+            {a.author ? `, por ${a.author}` : ""}, em {date}. Direitos reservados à fonte.{" "}
             <a
               href={a.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-block font-semibold text-brand hover:underline"
+              className="font-semibold text-brand hover:underline"
             >
-              Referência: matéria original em {a.source}
+              Ver matéria original
             </a>
           </aside>
         </div>
