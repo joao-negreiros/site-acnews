@@ -1,12 +1,10 @@
-import { FaFacebookF, FaInstagram, FaWhatsapp, FaXTwitter, FaYoutube } from "react-icons/fa6";
+import { FaInstagram, FaTiktok, FaYoutube } from "react-icons/fa6";
 import { SOCIAL } from "@/lib/site";
 
 const ICONS = {
   Instagram: FaInstagram,
-  Facebook: FaFacebookF,
-  X: FaXTwitter,
+  TikTok: FaTiktok,
   YouTube: FaYoutube,
-  WhatsApp: FaWhatsapp,
 } as const;
 
 /** Ícones das redes do portal. Sem `href` em lib/site.ts, o ícone aparece sem link. */

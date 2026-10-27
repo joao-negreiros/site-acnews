@@ -3,12 +3,13 @@
  * enquanto estiver vazio, o ícone aparece sem link.
  */
 export const SOCIAL = [
-  { name: "Instagram", href: "" },
-  { name: "Facebook", href: "" },
-  { name: "X", href: "" },
-  { name: "YouTube", href: "" },
-  { name: "WhatsApp", href: "" },
+  { name: "Instagram", href: "https://www.instagram.com/_acnews" },
+  { name: "TikTok", href: "https://www.tiktok.com/@ac.newsbr" },
+  { name: "YouTube", href: "https://youtube.com/@acnewsbr" },
 ] as const;
+
+/** E-mail de contato do portal (rodapé). */
+export const CONTACT_EMAIL = "acnewsjornalismo@gmail.com";
 
 /*
  * Curadoria das matérias nacionais e internacionais. Os termos são comparados sem acento

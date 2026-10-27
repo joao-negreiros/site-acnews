@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/feeds";
 import { SocialIcons } from "@/components/SocialIcons";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 const heading = "mb-3 border-b border-brand pb-1 text-sm font-bold uppercase tracking-wide text-white";
 
@@ -41,6 +42,10 @@ export function Footer() {
           <p className="text-sm leading-relaxed">
             Matérias creditadas ao veículo de origem e referenciadas à publicação.
           </p>
+          <h2 className={`${heading} mt-6`}>Contato</h2>
+          <a href={`mailto:${CONTACT_EMAIL}`} className="text-sm hover:text-white hover:underline">
+            {CONTACT_EMAIL}
+          </a>
         </div>
       </div>
 
