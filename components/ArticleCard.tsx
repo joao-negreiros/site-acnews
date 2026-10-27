@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Photo } from "@/components/Photo";
 import { CATEGORIES, timeAgo, type Article } from "@/lib/feeds";
 
 const catName = (slug: string) => CATEGORIES.find((c) => c.slug === slug)?.name ?? slug;
@@ -18,17 +19,20 @@ export function ArticleCard({
       href={`/noticia/${a.id}`}
       className={`group flex gap-4 ${featured ? "flex-col" : "flex-row"}`}
     >
-      {a.image && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={a.image}
-          alt=""
-          loading="lazy"
-          className={`object-cover rounded bg-neutral-200 ${
-            featured ? "w-full aspect-video" : "w-28 h-20 shrink-0"
-          }`}
-        />
-      )}
+      {a.image &&
+        (featured ? (
+          // Destaque: foto inteira na moldura 16:9, sem cortar
+          <Photo src={a.image} className="aspect-video w-full" eager />
+        ) : (
+          // Miniatura: recorte pequeno, ancorado no alto para preservar rostos
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={a.image}
+            alt=""
+            loading="lazy"
+            className="h-20 w-28 shrink-0 rounded bg-neutral-200 object-cover object-top"
+          />
+        ))}
       <div className="min-w-0">
         {showCategory && (
           <p className="text-xs font-semibold uppercase tracking-wide text-brand">
