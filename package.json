@@ -12,9 +12,11 @@
     "@vercel/blob": "^2.8.2",
     "fast-xml-parser": "^5.11.2",
     "next": "16.4.3",
+    "opentype.js": "^2.0.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-icons": "^5.7.0"
+    "react-icons": "^5.7.0",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

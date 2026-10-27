@@ -63,6 +63,8 @@ export type Article = {
   id: string;
   /** Endereço curto da matéria (primeiras palavras da manchete); definido em getArticles */
   slug?: string;
+  /** Quantos outros portais publicaram o mesmo assunto (sinal de relevância); definido em fetchLive */
+  rel?: number;
   title: string;
   link: string;
   summary: string;
@@ -269,6 +271,9 @@ function similar(a: Set<string>, b: Set<string>, min: number) {
   return common / Math.min(a.size, b.size) >= min;
 }
 
+/** Duas manchetes tratam do mesmo assunto? */
+export const sameTopic = (a: string, b: string) => similar(tokens(a), tokens(b), 0.5);
+
 /** Mantém uma só matéria por assunto: a primeira de `ordered`. */
 function dedupe(ordered: Article[], min = 0.6): Article[] {
   const kept: { a: Article; t: Set<string> }[] = [];
@@ -321,6 +326,13 @@ export async function fetchLive(): Promise<Article[]> {
   const all = (await Promise.all(SOURCES.filter((s) => !s.excerptOnly).map(fetchSource))).flat();
   const seen = new Set<string>();
   const unique = all.filter((a) => a.title && a.link && !seen.has(a.link) && seen.add(a.link) && isComplete(a));
+
+  // Relevância: em quantos outros portais o mesmo assunto também saiu (conta antes de tirar as repetidas)
+  const tk = new Map(unique.map((a) => [a, tokens(a.title)]));
+  for (const a of unique) {
+    const others = new Set(unique.filter((o) => o.source !== a.source && similar(tk.get(a)!, tk.get(o)!, 0.5)).map((o) => o.source));
+    a.rel = others.size;
+  }
 
   // Acre: tudo entra; quando vários portais dão o mesmo assunto, fica a versão com mais texto
   const acre = dedupe(

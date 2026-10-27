@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Fontes e moldura da imagem do post são lidas do disco em tempo de execução
+  outputFileTracingIncludes: {
+    "/api/instagram/imagem/[id]": ["./assets/**/*"],
+  },
   async headers() {
     return [
       {
