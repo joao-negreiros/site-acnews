@@ -10,20 +10,46 @@ export const SOCIAL = [
   { name: "WhatsApp", href: "" },
 ] as const;
 
-/**
- * Curadoria manual das matérias nacionais e internacionais.
- * PIN: trechos de título que forçam a matéria a entrar (ex.: "Lula").
- * EXCLUDE: trechos de título ou link que barram a matéria (ex.: "horóscopo").
+/*
+ * Curadoria das matérias nacionais e internacionais. Os termos são comparados sem acento
+ * e sem diferenciar maiúsculas, a partir do começo da palavra ("debocha" pega "debocham").
  */
+
+/** PIN: termos no título que forçam a matéria a entrar (ex.: "Lula"). */
 export const PIN: string[] = [];
+
+/** EXCLUDE: termos no título ou no link que barram a matéria. */
 export const EXCLUDE: string[] = [
   "mega-sena",
   "loteria",
   "quina",
-  "lotofácil",
-  "horóscopo",
-  "previsão do tempo",
+  "lotofacil",
+  "horoscopo",
+  "previsao do tempo",
   "bbb",
   "novela",
-  "vinícola",
+  "vinicola",
+  // fofoca de celebridade
+  "fofoca",
+  "noitada",
+  "debocha",
+  "polemica",
+  "affair",
+  "climao",
+  "barraco",
+  "traicao",
+  "separacao",
+  "namoro",
+  "romance com",
+];
+
+/**
+ * Cultura: só entra matéria que mencione algum destes termos no título ou no resumo.
+ * É o que deixa a fofoca de fora; acrescente termos para abrir o filtro.
+ */
+export const CULTURA_TERMOS: string[] = [
+  "cinema", "filme", "documentario", "serie", "festival", "teatro", "espetaculo", "danca", "ballet",
+  "musica", "album", "show", "turne", "orquestra", "concerto",
+  "livro", "literat", "escritor", "poesia", "jabuti", "oscar", "grammy", "premio",
+  "exposicao", "museu", "galeria", "artes", "patrimonio", "cultura",
 ];

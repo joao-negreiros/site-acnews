@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
-import { EXCLUDE, PIN } from "@/lib/site";
+import { CULTURA_TERMOS, EXCLUDE, PIN } from "@/lib/site";
 
 export type Category = { slug: string; name: string };
 
@@ -184,6 +184,12 @@ const STOP = new Set(
   ),
 );
 
+const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+/** O termo aparece a partir do começo de uma palavra ("debocha" pega "debocham", mas "quina" não pega "máquina"). */
+const hasTerm = (text: string, term: string) =>
+  new RegExp(`(^|[^a-z0-9])${norm(term).replace(/\W/g, (c) => "\\" + c)}`).test(text);
+
 const tokens = (title: string) =>
   new Set(
     title
@@ -213,7 +219,6 @@ function dedupe(ordered: Article[], min = 0.6): Article[] {
 }
 
 const byDate = (a: Article, b: Article) => +new Date(b.date) - +new Date(a.date);
-const lower = (s: string) => s.toLowerCase();
 
 /**
  * Nacional/internacional: só o que é muito relevante e recente. A relevância vem de quantos
@@ -224,7 +229,9 @@ function selectRelevant(pool: Article[]): Article[] {
   const since = Date.now() - WINDOW_HOURS * 3600_000;
   const recent = pool
     .filter((a) => +new Date(a.date) >= since)
-    .filter((a) => !EXCLUDE.some((k) => lower(a.title + a.link).includes(lower(k))));
+    .filter((a) => !EXCLUDE.some((k) => hasTerm(norm(`${a.title} ${a.link}`), k)))
+    // Cultura: só o que fala de cultura de fato (deixa a fofoca de fora)
+    .filter((a) => a.category !== "cultura" || CULTURA_TERMOS.some((k) => hasTerm(norm(`${a.title} ${a.summary}`), k)));
   const tk = new Map(recent.map((a) => [a, tokens(a.title)]));
 
   const score = (a: Article) => {
@@ -232,7 +239,7 @@ function selectRelevant(pool: Article[]): Article[] {
       recent.filter((o) => o.source !== a.source && similar(tk.get(a)!, tk.get(o)!, 0.5)).map((o) => o.source),
     );
     const age = (Date.now() - +new Date(a.date)) / (WINDOW_HOURS * 3600_000);
-    const pinned = PIN.some((k) => lower(a.title).includes(lower(k))) ? 100 : 0;
+    const pinned = PIN.some((k) => hasTerm(norm(a.title), k)) ? 100 : 0;
     return pinned + others.size * 2 + (1 - age);
   };
 
