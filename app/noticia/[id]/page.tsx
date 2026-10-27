@@ -35,7 +35,7 @@ export default async function ArticlePage({ params }: Props) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-white.png" alt="AC News" className="h-6 w-auto" />
           </Link>
-          <span className="text-lg font-semibold uppercase tracking-wide">{cat?.name}</span>
+          <span className="font-[family-name:var(--font-outfit)] text-base font-semibold uppercase">{cat?.name}</span>
           <span />
         </div>
       </header>
