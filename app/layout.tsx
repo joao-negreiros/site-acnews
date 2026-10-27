@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Source_Serif_4 } from "next/font/google";
+import { Footer } from "@/components/Footer";
 import "./globals.css";
 
 // Fonte única do portal (exceto a logomarca, que é imagem)
@@ -15,9 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" className={`${serif.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         {children}
-        <footer className="border-t border-neutral-300 dark:border-neutral-800 py-6 text-center text-xs text-neutral-500">
-          AC News · Notícias agregadas de fontes públicas via RSS. Os direitos pertencem aos veículos de origem.
-        </footer>
+        <Footer />
       </body>
     </html>
   );

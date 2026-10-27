@@ -1,16 +1,7 @@
 import Link from "next/link";
-import { FaFacebookF, FaInstagram, FaWhatsapp, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { CATEGORIES } from "@/lib/feeds";
 import { getQuotes } from "@/lib/market";
-import { SOCIAL } from "@/lib/site";
-
-const ICONS = {
-  Instagram: FaInstagram,
-  Facebook: FaFacebookF,
-  X: FaXTwitter,
-  YouTube: FaYoutube,
-  WhatsApp: FaWhatsapp,
-} as const;
+import { SocialIcons } from "@/components/SocialIcons";
 
 export async function Header() {
   const quotes = await getQuotes();
@@ -20,30 +11,7 @@ export async function Header() {
       {/* Faixa cinza: redes sociais à esquerda, cotações à direita */}
       <div className="bg-neutral-100 text-xs text-neutral-600">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-2">
-          <ul className="flex items-center gap-3">
-            {SOCIAL.map((s) => {
-              const Icon = ICONS[s.name];
-              return (
-                <li key={s.name}>
-                  {s.href ? (
-                    <a
-                      href={s.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={s.name}
-                      className="block hover:text-brand"
-                    >
-                      <Icon size={15} />
-                    </a>
-                  ) : (
-                    <span aria-hidden className="block opacity-60">
-                      <Icon size={15} />
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+          <SocialIcons />
 
           <ul className="flex items-center gap-4 overflow-x-auto whitespace-nowrap">
             {quotes.map((q) => (
