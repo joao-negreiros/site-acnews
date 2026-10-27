@@ -3,7 +3,8 @@ import { CATEGORIES } from "@/lib/feeds";
 import { getQuotes } from "@/lib/market";
 import { SocialIcons } from "@/components/SocialIcons";
 
-export async function Header() {
+/** `active`: slug da editoria a destacar no menu (usado na página da matéria). */
+export async function Header({ active }: { active?: string }) {
   const quotes = await getQuotes();
 
   return (
@@ -39,11 +40,17 @@ export async function Header() {
       <nav className="bg-brand text-white">
         <ul className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-4 font-[family-name:var(--font-outfit)] text-sm font-semibold uppercase whitespace-nowrap md:justify-center md:text-base">
           <li>
-            <Link href="/" className="block px-3 py-3 hover:bg-black/15">Capa</Link>
+            <Link href="/" className="block border-b-4 border-transparent px-3 py-3 hover:bg-black/15">Capa</Link>
           </li>
           {CATEGORIES.map((c) => (
             <li key={c.slug}>
-              <Link href={`/c/${c.slug}`} className="block px-3 py-3 hover:bg-black/15">
+              <Link
+                href={`/c/${c.slug}`}
+                aria-current={c.slug === active ? "page" : undefined}
+                className={`block border-b-4 px-3 py-3 hover:bg-black/15 ${
+                  c.slug === active ? "border-white bg-black/20" : "border-transparent"
+                }`}
+              >
                 {c.name}
               </Link>
             </li>

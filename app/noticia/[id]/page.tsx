@@ -27,7 +27,7 @@ export default async function ArticlePage({ params }: Props) {
 
   return (
     <>
-      <Header />
+      <Header active={a.category} />
 
       <article className="flex-1 pb-12">
         {/* Ordem padrão da matéria: manchete, foto ou vídeo, créditos, texto */}
