@@ -22,7 +22,7 @@ export default async function ArticlePage({ params }: Props) {
     timeStyle: "short",
     timeZone: "America/Sao_Paulo",
   });
-  const paragraphs = a.paragraphs.length ? a.paragraphs : [a.summary];
+  const paragraphs = a.paragraphs.length ? a.paragraphs : a.summary ? [a.summary] : [];
   // A linha fina é o resumo; só aparece quando o texto não começa com ele
   const lead = a.summary && !paragraphs[0]?.startsWith(a.summary.slice(0, 60)) ? a.summary : "";
 
@@ -74,7 +74,9 @@ export default async function ArticlePage({ params }: Props) {
             </p>
             {!a.fullText && (
               <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-                A fonte disponibiliza apenas o resumo desta matéria.
+                {paragraphs.length
+                  ? "A fonte disponibiliza apenas o resumo desta matéria."
+                  : "A fonte disponibiliza apenas o título e a imagem desta matéria."}
               </p>
             )}
             <a

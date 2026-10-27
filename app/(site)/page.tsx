@@ -6,14 +6,13 @@ export const revalidate = 600;
 
 export default async function Home() {
   const all = await getArticles();
-  const withImage = all.filter((a) => a.image);
-  const hero = withImage[0] ?? all[0];
-  const rest = all.filter((a) => a !== hero);
-  // Destaques laterais: a mais recente de cada categoria, para não ficar tudo do mesmo assunto
-  const sideTop = CATEGORIES.map((c) => rest.find((a) => a.category === c.slug))
-    .filter((a): a is NonNullable<typeof a> => !!a)
-    .sort((a, b) => +new Date(b.date) - +new Date(a.date))
-    .slice(0, 5);
+  const acre = all.filter((a) => a.category === "acre");
+
+  // O Acre manda na home: destaque e lateral saem dele; sem Acre, cai para o que houver
+  const lead = acre.length ? acre : all;
+  const hero = lead.find((a) => a.image) ?? lead[0];
+  const side = lead.filter((a) => a !== hero).slice(0, 5);
+  const shown = new Set([hero, ...side]);
 
   if (!hero) {
     return <p className="py-20 text-center text-neutral-500">Sem notícias no momento. Tente novamente em instantes.</p>;
@@ -25,15 +24,17 @@ export default async function Home() {
         <div className="md:col-span-2">
           <ArticleCard a={hero} featured />
         </div>
-        <div className="space-y-4 md:border-l md:pl-6 border-neutral-300 dark:border-neutral-800">
-          {sideTop.map((a) => (
+        <div className="space-y-4 md:border-l md:pl-6 border-neutral-300">
+          {side.map((a) => (
             <ArticleCard key={a.id} a={a} />
           ))}
         </div>
       </section>
 
       {CATEGORIES.map((c) => {
-        const items = rest.filter((a) => a.category === c.slug && !sideTop.includes(a)).slice(0, 4);
+        const items = all
+          .filter((a) => a.category === c.slug && !shown.has(a))
+          .slice(0, c.slug === "acre" ? 8 : 4);
         if (!items.length) return null;
         return (
           <section key={c.slug}>
