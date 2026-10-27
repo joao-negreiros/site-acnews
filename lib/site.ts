@@ -53,3 +53,15 @@ export const CULTURA_TERMOS: string[] = [
   "livro", "literat", "escritor", "poesia", "jabuti", "oscar", "grammy", "premio",
   "exposicao", "museu", "galeria", "artes", "patrimonio", "cultura",
 ];
+
+/**
+ * Espaços de publicidade da home. Para ativar um anúncio, preencha `image` (endereço https
+ * da arte, ideal 970x250), `href` (destino) e `alt`. Sem anúncio (null), aparece a moldura vazia.
+ *   meio: entre as seções Acre e Política
+ *   fim:  depois da última seção, antes do rodapé
+ */
+export type Ad = { image: string; href: string; alt: string } | null;
+export const ADS: Record<"meio" | "fim", Ad> = {
+  meio: null,
+  fim: null,
+};
